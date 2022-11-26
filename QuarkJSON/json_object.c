@@ -27,6 +27,14 @@ void json_object_destroy(struct JSONObject *json) {
         free(string.value);
     }
     free(strings);
+
+    const unsigned long integers_count = json->integers_count;
+    struct JSONObjectValueInteger *integers = json->integers;
+    for (unsigned long i = 0; i < integers_count; i++) {
+        struct JSONObjectValueInteger integer = integers[i];
+        free(integer.key);
+    }
+    free(integers);
 }
 void json_object_calculate_string_length(struct JSONObject *json) {
     unsigned long bytes = 1;
@@ -43,6 +51,13 @@ void json_object_calculate_string_length(struct JSONObject *json) {
     for (unsigned long i = 0; i < strings_count; i++) {
         struct JSONObjectValueString string = strings[i];
         bytes += string.to_string_length + 1;
+    }
+
+    const unsigned long integers_count = json->integers_count;
+    struct JSONObjectValueInteger *integers = json->integers;
+    for (unsigned long i = 0; i < integers_count; i++) {
+        struct JSONObjectValueInteger integer = integers[i];
+        bytes += integer.to_string_length + 1;
     }
     
     json->to_string_length = bytes;
@@ -140,14 +155,25 @@ void json_object_value_string_to_string(struct JSONObjectValueString *value_stri
     to_string[byte] = '\0';
 }
 
-void json_object_parse_fixed_size(const char *string, const unsigned long string_length, const unsigned long string_count, struct JSONObject *parsed_json) {
+void json_object_parse_fixed_size_from_file(const char *file_path, const unsigned long string_count, const unsigned long boolean_count, struct JSONObject *parsed_json) {
+    FILE *file = fopen(file_path, "rb");
+    fseek(file, 0, SEEK_END);
+    const unsigned long file_length = ftell(file);
+    rewind(file);
+    
+    char buffer[file_length];
+    fread(buffer, file_length, 1, file);
+    fclose(file);
+    json_object_parse_fixed_size(buffer, file_length, string_count, boolean_count, parsed_json);
+}
+void json_object_parse_fixed_size(const char *string, const unsigned long string_length, const unsigned long string_count, const unsigned long boolean_count, struct JSONObject *parsed_json) {
     char *key = NULL;
     unsigned char key_length = 0;
     char string_key_array[128];
     char string_value_array[512];
     
     unsigned long booleans_count = 0;
-    struct JSONObjectValueBoolean *booleans = malloc(1 * sizeof(struct JSONObjectValueBoolean));
+    struct JSONObjectValueBoolean *booleans = malloc(boolean_count * sizeof(struct JSONObjectValueBoolean));
     
     unsigned long strings_count = 0;
     struct JSONObjectValueString *strings = malloc(string_count * sizeof(struct JSONObjectValueString));
@@ -181,7 +207,34 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
                 byte += 1;
                 target_character = string[byte];
                 switch (target_character) {
-                    case '1': {
+                    case '-':
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9': {
+                        unsigned char value_type, value_length;
+                        int value_integer;
+                        float value_float;
+                        double value_double;
+                        json_parse_number(string, string_count, byte, &value_type, &value_length, &value_integer, &value_float, &value_double); // TODO: finish
+                        switch (value_type) {
+                            case 0: {
+                                break;
+                            } case 1: {
+                                break;
+                            } case 2: {
+                                break;
+                            } default: {
+                                break;
+                            }
+                        }
+                        byte += value_length + 1;
                         break;
                     } case 'n': {
                         break;
@@ -242,10 +295,69 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
     parsed_json->to_string_length = string_length;
 }
 
+void json_parse_number(const char *string, const unsigned long string_length, unsigned long byte, unsigned char *value_type, unsigned char *value_length, int *value_integer, float *value_float, double *value_double) {
+    unsigned long index = 0;
+    char target_number[16];
+    _Bool counting_decimals = 0;
+    unsigned char decimal_count = 0;
+    for (unsigned long i = byte; i < string_length; i++) {
+        const char target_character = string[i];
+        switch (i) {
+            case ',': {
+                goto parsed;
+                break;
+            } case '-':
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9': {
+                target_number[index] = target_character;
+                index += 1;
+                if (counting_decimals) {
+                    decimal_count += 1;
+                }
+                break;
+            } case '.': {
+                counting_decimals = 1;
+                target_number[index] = target_character;
+                index += 1;
+                break;
+            } default: {
+                break;
+            }
+        }
+    }
+parsed:
+    *value_length = strlen(target_number);
+    switch (decimal_count) {
+        case 0: {
+            *value_type = 0;
+            *value_integer = strtol(target_number, NULL, 10);
+            break;
+        } case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6: {
+            *value_type = 1;
+            break;
+        } default: {
+            *value_type = 2;
+            break;
+        }
+    }
+}
 void json_parse_string(const char *string, const unsigned long string_length, unsigned long byte, char *parsed_string) {
     unsigned long index = 0;
     for (unsigned long i = byte; i < string_length; i++) {
-        char target_character = string[i];
+        const char target_character = string[i];
         switch (target_character) {
             case '"': {
                 parsed_string[index] = '\0';
