@@ -18,3 +18,4 @@ with initial benchmarking, parsing a 5.3MB (5359993 bytes) _string only key-valu
 - TODO
 
 ## License
+Creative Commons Zero v1.0 Universal. AKA, public domain. I chose this license because I enjoy sharing knowledge.
