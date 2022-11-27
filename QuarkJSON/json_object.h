@@ -17,8 +17,8 @@ struct JSONObject {
     unsigned long strings_count;
     struct JSONObjectValueString *strings;
 
-    unsigned long integers_count;
-    struct JSONObjectValueInteger *integers;
+    unsigned long numbers_count;
+    struct JSONObjectValueNumber *numbers;
     
     unsigned long to_string_length;
 };
@@ -38,10 +38,16 @@ struct JSONObjectValueString {
     unsigned short to_string_length;
 };
 
-struct JSONObjectValueInteger {
+enum JSONObjectValueNumberType {
+    JSON_OBJECT_VALUE_NUMBER_TYPE_INTEGER,
+    JSON_OBJECT_VALUE_NUMBER_TYPE_FLOAT,
+    JSON_OBJECT_VALUE_NUMBER_TYPE_DOUBLE,
+};
+
+struct JSONObjectValueNumber {
     char *key;
     unsigned char key_length;
-    int value;
+    char *value;
     unsigned char value_length;
     unsigned short to_string_length;
 };
@@ -55,11 +61,12 @@ void json_object_value_string_calculate_string_length(struct JSONObjectValueStri
 
 void json_object_value_boolean_to_string(struct JSONObjectValueBoolean *value_boolean, char *to_string);
 void json_object_value_string_to_string(struct JSONObjectValueString *value_string, char *to_string);
+void json_object_value_number_to_string(struct JSONObjectValueNumber *value_number, char *to_string);
 
-void json_object_parse_fixed_size_from_file(const char *file_path, const unsigned long string_count, const unsigned long boolean_count, struct JSONObject *parsed_json);
-void json_object_parse_fixed_size(const char *string, const unsigned long string_length, const unsigned long string_count, const unsigned long boolean_count, struct JSONObject *parsed_json);
+void json_object_parse_fixed_size_from_file(const char *file_path, const unsigned long string_count, const unsigned long boolean_count, const unsigned long number_count, struct JSONObject *parsed_json);
+void json_object_parse_fixed_size(const char *string, const unsigned long string_length, const unsigned long string_count, const unsigned long boolean_count, const unsigned long number_count, struct JSONObject *parsed_json);
 
-void json_parse_number(const char *string, const unsigned long string_length, unsigned long byte, unsigned char *value_type, unsigned char *value_length, int *value_integer, float *value_float, double *value_double);
+void json_parse_number(const char *string, const unsigned long string_length, unsigned long byte, char *value_as_string, unsigned char *value_length);
 void json_parse_string(const char *string, const unsigned long string_length, unsigned long byte, char *parsed_string);
 
 _Bool json_object_get_boolean(const struct JSONObject *json, const char *key);

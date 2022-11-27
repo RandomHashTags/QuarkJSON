@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include "json_object.h"
+#include "quark_json.h"
 
 unsigned long current_time_nano(void) { // TODO: remove this
     struct timespec now;
@@ -50,12 +51,17 @@ void benchmark_stringify(void) {
         json_object_value_string_calculate_string_length(&value_string);
         strings[i] = value_string;
     }
+
+    const unsigned long numbers_count = 1;
+    struct JSONObjectValueNumber numbers[numbers_count];
     
     struct JSONObject json = {
         .booleans_count = booleans_count,
         .booleans = booleans,
         .strings_count = strings_count,
-        .strings = strings
+        .strings = strings,
+        .numbers_count = numbers_count,
+        .numbers = numbers
     };
     json_object_calculate_string_length(&json);
     
@@ -68,7 +74,7 @@ void benchmark_stringify(void) {
     
     struct JSONObject parsed_json;
     struct JSONObject *parsed_json_pointer = &parsed_json;
-    json_object_parse_fixed_size(to_string, to_string_length, strings_count, booleans_count, parsed_json_pointer);
+    json_object_parse_fixed_size(to_string, to_string_length, strings_count, booleans_count, numbers_count, parsed_json_pointer);
     char *parsed_json_to_string = malloc(to_string_length * sizeof(char));
     
     double least_bytes_per_nano = 0, most_bytes_per_nano = 0;
@@ -103,7 +109,8 @@ void benchmark_stringify(void) {
 void benchmark_parsing_from_file(void) {
     struct JSONObject parsed_json_from_file;
     unsigned long took_ns = current_time_nano();
-    json_object_parse_fixed_size_from_file("/Users/randomhashtags/Downloads/test_json_big.json", 300, 80000, &parsed_json_from_file);
+    //json_object_parse_fixed_size_from_file("/Users/randomhashtags/Downloads/test_json_big.json", 300, 80000, 1, &parsed_json_from_file);
+    json_object_parse_fixed_size_from_file("/Users/randomhashtags/Downloads/test_json_small.json", 1, 1, 2, &parsed_json_from_file);
     took_ns = current_time_nano() - took_ns;
     const unsigned long to_string_length = parsed_json_from_file.to_string_length;
     const long double took_ms = (long double) took_ns / (long double) 1000000;
@@ -112,11 +119,17 @@ void benchmark_parsing_from_file(void) {
     char parsed_json_from_file_to_string[parsed_json_from_file.to_string_length];
     json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
     printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %luns (%Lfms, megabytes per second=%Lf)\n", to_string_length, strlen(parsed_json_from_file_to_string), took_ns, took_ms, megabytes_per_second);
+    printf("%s\n", parsed_json_from_file_to_string);
     json_object_destroy(&parsed_json_from_file);
 }
 
 int main(int argc, const char *args[]) {
-    benchmark_stringify();
-    //benchmark_parsing_from_file();
+    //benchmark_stringify();
+    benchmark_parsing_from_file();
+    /*unsigned long took_ns = current_time_nano();
+    quark_json_test();
+    took_ns = current_time_nano() - took_ns;
+    const long double took_ms = (long double) took_ns / (long double) 1000000;
+    printf("quark_json_test took %Lfms (%luns)\n", took_ms, took_ns);*/
     return 1;
 }
