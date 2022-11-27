@@ -28,10 +28,9 @@ file:
 - speed: ~500-760 MB/s
 - RAM used: 13.74 MiB (14.40743 MB)
 ### Stringify
-initial benchmarking suggests ~2-6 GB/s - a 5.36MB (5359993 bytes) _string only key-value_ JSON can take less than a millisecond (0.890000ms, or 6.022464 GB/s)
-- obviously there are more than 1 data type to be parsed, not just strings
+- ~2-6 GB/s
   
-**OFFICIAL BENCHMARKS WILL BE MORE ACCURATE AND DOCUMENTED WHEN THE PARSER IS OUT OF BETA**
+**OFFICIAL BENCHMARKS WILL BE MORE ACCURATE AND WELL DOCUMENTED WHEN THE PARSER IS OUT OF BETA**
 
 ### Future
 - use SIMD or similar cpu instruction for better performance
