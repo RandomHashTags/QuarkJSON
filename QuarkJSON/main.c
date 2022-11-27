@@ -10,7 +10,6 @@
 #include <string.h>
 #include <time.h>
 #include "json_object.h"
-#include "quark_json.h"
 
 unsigned long current_time_nano(void) { // TODO: remove this
     struct timespec now;
@@ -123,13 +122,23 @@ void benchmark_parsing_from_file(void) {
     json_object_destroy(&parsed_json_from_file);
 }
 
-int main(int argc, const char *args[]) {
-    //benchmark_stringify();
-    benchmark_parsing_from_file();
-    /*unsigned long took_ns = current_time_nano();
-    quark_json_test();
+void benchmark_simd(void) {
+    unsigned long took_ns = current_time_nano();
+    //quark_json_test();
     took_ns = current_time_nano() - took_ns;
-    const long double took_ms = (long double) took_ns / (long double) 1000000;
-    printf("quark_json_test took %Lfms (%luns)\n", took_ms, took_ns);*/
+    long double took_ms = (long double) took_ns / (long double) 1000000;
+    printf("quark_json_test took %Lfms (%luns)\n", took_ms, took_ns);
+
+    took_ns = current_time_nano();
+    //quark_json_test_simd();
+    took_ns = current_time_nano() - took_ns;
+    took_ms = (long double) took_ns / (long double) 1000000;
+    printf("quark_json_test_simd took %Lfms (%luns)\n", took_ms, took_ns);
+}
+
+int main(int argc, const char *args[]) {
+    benchmark_stringify();
+    //benchmark_parsing_from_file();
+    //benchmark_simd();
     return 1;
 }

@@ -1,5 +1,12 @@
 {
     "files.associations": {
-        "immintrin.h": "c"
+        "immintrin.h": "c",
+        "__locale": "c",
+        "locale": "c",
+        "inttypes.h": "c",
+        "stdint.h": "c",
+        "atomic": "c",
+        "cstdint": "c",
+        "math.h": "c"
     }
 }

@@ -364,13 +364,13 @@ void json_parse_number(const char *string, const unsigned long string_length, un
                 index += 1;
                 break;
             } default: {
-                value_as_string[index] = '\0';
                 goto parsed;
                 break;
             }
         }
     }
 parsed:
+    value_as_string[index] = '\0';
     *value_length = strlen(value_as_string);
 }
 void json_parse_string(const char *string, const unsigned long string_length, unsigned long byte, char *parsed_string) {
