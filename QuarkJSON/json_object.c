@@ -224,6 +224,8 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
 
     unsigned long numbers_count = 0;
     struct JSONObjectValueNumber *numbers = malloc(number_count * sizeof(struct JSONObjectValueNumber));
+
+    const size_t sizeof_char = sizeof(char);
     
     for (unsigned long byte = 1; byte < string_length; byte++) {
         char target_character = string[byte];
@@ -243,7 +245,7 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
                 json_parse_string(string, string_length, byte, string_key_array);
                 key_length = strlen(string_key_array);
                 char *parsed_string = malloc(key_length);
-                memcpy(parsed_string, string_key_array, key_length * sizeof(char));
+                memcpy(parsed_string, string_key_array, key_length * sizeof_char);
                 key = parsed_string;
                 byte += key_length;
                 break;
@@ -263,8 +265,8 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
                     case '8':
                     case '9': {
                         json_parse_number(string, string_length, byte, number_value_as_string, &number_value_length);
-                        char *value = malloc(number_value_length * sizeof(char));
-                        memcpy(value, number_value_as_string, number_value_length * sizeof(char));
+                        char *value = malloc(number_value_length * sizeof_char);
+                        memcpy(value, number_value_as_string, number_value_length * sizeof_char);
                         struct JSONObjectValueNumber number = {
                             .key = key,
                             .key_length = key_length,
@@ -305,15 +307,14 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
                         json_parse_string(string, string_length, byte, string_value_array);
                         const unsigned char value_length = strlen(string_value_array);
                         char *value = malloc(value_length);
-                        memcpy(value, string_value_array, value_length * sizeof(char));
+                        memcpy(value, string_value_array, value_length * sizeof_char);
                         struct JSONObjectValueString value_string = {
                             .key = key,
                             .key_length = key_length,
                             .value = value,
                             .value_length = value_length,
-                        };
-                        json_object_value_string_calculate_string_length(&value_string);
-                        
+                            .to_string_length = key_length + value_length + 5
+                        };                        
                         strings[strings_count] = value_string;
                         strings_count += 1;
                         byte += value_length + 1;
@@ -337,7 +338,7 @@ void json_object_parse_fixed_size(const char *string, const unsigned long string
     parsed_json->to_string_length = string_length;
 }
 
-void json_parse_number(const char *string, const unsigned long string_length, unsigned long byte, char *value_as_string, unsigned char *value_length) {
+static void json_parse_number(const char *string, const unsigned long string_length, unsigned long byte, char *value_as_string, unsigned char *value_length) {
     unsigned long index = 0;
     for (unsigned long i = byte; i < string_length; i++) {
         const char target_character = string[i];
@@ -346,6 +347,7 @@ void json_parse_number(const char *string, const unsigned long string_length, un
                 goto parsed;
                 break;
             } case '-':
+            case '.':
             case '0':
             case '1':
             case '2':
@@ -359,10 +361,6 @@ void json_parse_number(const char *string, const unsigned long string_length, un
                 value_as_string[index] = target_character;
                 index += 1;
                 break;
-            } case '.': {
-                value_as_string[index] = target_character;
-                index += 1;
-                break;
             } default: {
                 goto parsed;
                 break;
@@ -373,7 +371,7 @@ parsed:
     value_as_string[index] = '\0';
     *value_length = strlen(value_as_string);
 }
-void json_parse_string(const char *string, const unsigned long string_length, unsigned long byte, char *parsed_string) {
+static void json_parse_string(const char *string, const unsigned long string_length, unsigned long byte, char *parsed_string) {
     unsigned long index = 0;
     for (unsigned long i = byte; i < string_length; i++) {
         const char target_character = string[i];
@@ -415,4 +413,27 @@ char *json_object_get_string(const struct JSONObject *json, const char *key) {
         }
     }
     return NULL;
+}
+static char *json_object_get_number(const struct JSONObject *json, const char *key) {
+    const unsigned long numbers_count = json->numbers_count;
+    const struct JSONObjectValueNumber *numbers = json->numbers;
+    for (unsigned long i = 0; i < numbers_count; i++) {
+        struct JSONObjectValueNumber number = numbers[i];
+        if (strcmp(key, number.key) == 0) {
+            return number.value;
+        }
+    }
+    return NULL;
+}
+int json_object_get_integer(const struct JSONObject *json, const char *key) {
+    const char *number = json_object_get_number(json, key);
+    return strtol(number, NULL, 10);
+}
+float json_object_get_float(const struct JSONObject *json, const char *key) {
+    const char *number = json_object_get_number(json, key);
+    return strtof(number, NULL);
+}
+double json_object_get_double(const struct JSONObject *json, const char *key) {
+    const char *number = json_object_get_number(json, key);
+    return strtod(number, NULL);
 }

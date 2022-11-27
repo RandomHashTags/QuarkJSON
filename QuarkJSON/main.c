@@ -108,17 +108,17 @@ void benchmark_stringify(void) {
 void benchmark_parsing_from_file(void) {
     struct JSONObject parsed_json_from_file;
     unsigned long took_ns = current_time_nano();
-    //json_object_parse_fixed_size_from_file("/Users/randomhashtags/Downloads/test_json_big.json", 300, 80000, 1, &parsed_json_from_file);
-    json_object_parse_fixed_size_from_file("/Users/randomhashtags/Downloads/test_json_small.json", 1, 1, 2, &parsed_json_from_file);
+    json_object_parse_fixed_size_from_file("test_json_big.json", 300, 80000, 0, &parsed_json_from_file);
+    //json_object_parse_fixed_size_from_file("test_json_small.json", 1, 1, 2, &parsed_json_from_file);
     took_ns = current_time_nano() - took_ns;
     const unsigned long to_string_length = parsed_json_from_file.to_string_length;
-    const long double took_ms = (long double) took_ns / (long double) 1000000;
-    const long double megabytes_per_second = (long double) to_string_length / (long double) took_ns * 1000;
+    const long double took_ms = took_ns == 0 ? 1 : (long double) took_ns / (long double) 1000000;
+    const long double megabytes_per_second = ((long double) to_string_length / (long double) took_ms) / 1000;
     
-    char parsed_json_from_file_to_string[parsed_json_from_file.to_string_length];
-    json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
-    printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %luns (%Lfms, megabytes per second=%Lf)\n", to_string_length, strlen(parsed_json_from_file_to_string), took_ns, took_ms, megabytes_per_second);
-    printf("%s\n", parsed_json_from_file_to_string);
+    //char parsed_json_from_file_to_string[parsed_json_from_file.to_string_length];
+    //json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
+    printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %luns (%Lfms, megabytes per second=%Lf)\n", to_string_length, to_string_length+1, took_ns, took_ms, megabytes_per_second);
+    //printf("%s\n", parsed_json_from_file_to_string);
     json_object_destroy(&parsed_json_from_file);
 }
 
@@ -137,8 +137,8 @@ void benchmark_simd(void) {
 }
 
 int main(int argc, const char *args[]) {
-    benchmark_stringify();
-    //benchmark_parsing_from_file();
+    //benchmark_stringify();
+    benchmark_parsing_from_file();
     //benchmark_simd();
     return 1;
 }
