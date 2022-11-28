@@ -7,6 +7,8 @@
         "stdint.h": "c",
         "atomic": "c",
         "cstdint": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "altivec.h": "c",
+        "bitset": "c"
     }
 }

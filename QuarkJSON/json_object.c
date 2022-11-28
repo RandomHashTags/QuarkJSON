@@ -237,13 +237,13 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
     unsigned char number_value_length;
     
     unsigned long booleans_count = 0;
-    struct JSONObjectValueBoolean *booleans[100];
+    struct JSONObjectValueBoolean **booleans = alloca(100 * sizeof(struct JSONObjectValueBoolean *));
 
     unsigned long strings_count = 0;
-    struct JSONObjectValueString *strings[100];
+    struct JSONObjectValueString **strings = alloca(100 * sizeof(struct JSONObjectValueString *));
 
     unsigned long numbers_count = 0;
-    struct JSONObjectValueNumber *numbers[100];
+    struct JSONObjectValueNumber **numbers = alloca(100 * sizeof(struct JSONObjectValueNumber *));
 
     unsigned long jsons_count = 0;
     struct JSONObject *jsons[100];
@@ -260,7 +260,7 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                 byte += 1;
                 struct JSONObject target_json;
                 json_object_parse_starting_at(byte, string, string_length, &target_json);
-                jsons[jsons_count] = target_json;
+                //jsons[jsons_count] = target_json;
                 jsons_count += 1;
                 byte += target_json.to_string_length;
                 break;
@@ -273,7 +273,7 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                 key_length = strlen(string_key_array);
                 char *parsed_string = malloc(key_length);
                 if (!parsed_string) {
-                    json_object_destroy_elements(booleans_count, booleans, strings_count, strings, numbers_count, numbers);
+                    json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
                     return;
                 }
                 memcpy(parsed_string, string_key_array, key_length * sizeof_char);
@@ -300,14 +300,10 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                         memcpy(value, number_value_as_string, number_value_length * sizeof_char);
                         struct JSONObjectValueNumber *number = malloc(sizeof_number);
                         if (!number) {
-                            json_object_destroy_elements(booleans_count, booleans, strings_count, strings, numbers_count, numbers);
+                            json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
                             return;
                         }
-                        number->key = key;
-                        number->key_length = key_length;
-                        number->value = value;
-                        number->value_length = number_value_length;
-                        number->to_string_length = key_length + 3 + number_value_length + 1;
+                        //json_object_value_create_number(key, key_length, value, number_value_length, number);
                         numbers[numbers_count] = number;
                         numbers_count += 1;
                         byte += number_value_length;
@@ -318,7 +314,7 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                     case 't': {
                         struct JSONObjectValueBoolean *value_boolean = malloc(sizeof_boolean);
                         if (!value_boolean) {
-                            json_object_destroy_elements(booleans_count, booleans, strings_count, strings, numbers_count, numbers);
+                            json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
                             return;
                         }
                         const _Bool value = target_character == 't';
@@ -335,10 +331,10 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                         memcpy(value, string_value_array, value_length * sizeof_char);
                         struct JSONObjectValueString *value_string = malloc(sizeof_string);
                         if (!value_string) {
-                            json_object_destroy_elements(booleans_count, booleans, strings_count, strings, numbers_count, numbers);
+                            json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
                             return;
                         }
-                        json_object_value_create_string(key, key_length, value, value_length, &value_string);                   
+                        json_object_value_create_string(key, key_length, value, value_length, value_string);                   
                         strings[strings_count] = value_string;
                         strings_count += 1;
                         byte += value_length + 1;
@@ -356,15 +352,15 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
 
     const size_t booleans_size = booleans_count * sizeof(struct JSONObjectValueBoolean);
     struct JSONObjectValueBoolean *booleans_heap = malloc(booleans_size);
-    memcpy(booleans_heap, booleans, booleans_size);
+    booleans_heap = *booleans;
 
     const size_t strings_size = strings_count * sizeof(struct JSONObjectValueString);
     struct JSONObjectValueString *strings_heap = malloc(strings_size);
-    memcpy(strings_heap, strings, strings_size);
+    strings_heap = *strings;
 
     const size_t numbers_size = numbers_count * sizeof(struct JSONObjectValueNumber);
     struct JSONObjectValueNumber *numbers_heap = malloc(numbers_size);
-    memcpy(numbers_heap, numbers, numbers_size);
+    numbers_heap = *numbers;
 
     const size_t jsons_size = jsons_count * sizeof(struct JSONObject);
     struct JSONObject *jsons_heap = malloc(jsons_size);

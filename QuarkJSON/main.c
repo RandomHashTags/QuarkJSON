@@ -138,8 +138,8 @@ void benchmark_simd(void) {
 }
 
 int main(int argc, const char *args[]) {
-    benchmark_stringify();
+    //benchmark_stringify();
     //benchmark_parsing_from_file();
-    //benchmark_simd();
+    benchmark_simd();
     return 1;
 }
