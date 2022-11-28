@@ -1,1 +1,1 @@
-gcc QuarkJSON/*.c -o start -O3
+gcc QuarkJSON/*.c -o start -O3 -march=native

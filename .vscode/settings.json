@@ -9,6 +9,9 @@
         "cstdint": "c",
         "math.h": "c",
         "altivec.h": "c",
-        "bitset": "c"
+        "bitset": "c",
+        "json_object.h": "c",
+        "nmmintrin.h": "c",
+        "string.h": "c"
     }
 }

@@ -125,7 +125,7 @@ void benchmark_parsing_from_file(void) {
 
 void benchmark_simd(void) {
     unsigned long took_ns = current_time_nano();
-    quark_json_test();
+    quark_json_test_parser();
     took_ns = current_time_nano() - took_ns;
     long double took_ms = (long double) took_ns / (long double) 1000000;
     printf("benchmark_simd; quark_json_test took %Lfms (%luns)\n", took_ms, took_ns);
