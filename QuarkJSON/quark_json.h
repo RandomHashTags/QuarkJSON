@@ -14,20 +14,16 @@
 #define COMMA ','
 
 struct QuarkJSONObject {
-    unsigned long booleans_count;
-    struct QuarkJSONObjectValueBoolean *booleans;
 };
 
-struct QuarkJSONObjectValueBoolean {
-    __m256i key;
-    unsigned char key_length;
-    _Bool value;
-    unsigned short to_string_length;
+struct QuarkJSONBlock {
+    char string[33];
+    __m256i block;
 };
 
 void quark_json_print(__m256i vector);
 void quark_json_get_characters(__m256i vector, unsigned char offset, unsigned char length, char *characters);
-__m256i quark_json_parse_m256i(const char *string, const unsigned char offset);
+__m256i quark_json_parse_block(const char *string, const unsigned char offset, char *string_block);
 
 void quark_json_parse(char *string);
 

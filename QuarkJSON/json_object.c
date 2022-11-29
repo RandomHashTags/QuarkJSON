@@ -303,7 +303,7 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                             json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
                             return;
                         }
-                        //json_object_value_create_number(key, key_length, value, number_value_length, number);
+                        json_object_value_create_number(key, key_length, value, number_value_length, number);
                         numbers[numbers_count] = number;
                         numbers_count += 1;
                         byte += number_value_length;
@@ -555,7 +555,6 @@ static void json_parse_string(const char *string, const unsigned long string_len
         const char target_character = string[i];
         switch (target_character) {
             case '"': {
-                goto parsed;
                 break;
             } default: {
                 parsed_string[index] = target_character;
