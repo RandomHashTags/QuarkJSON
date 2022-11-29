@@ -23,7 +23,7 @@ __m256i quark_json_parse_m256i(const char *string, const unsigned char offset) {
 }
 
 void quark_json_parse(char *string) {
-    const unsigned long count = strlen(string), interval = 64, remainder = count % interval;
+    const unsigned long count = strlen(string), interval = 32, remainder = count % interval;
     const unsigned long corrected_count = count + (remainder > 0 ? interval - remainder : 0);
     const unsigned long vector_count = corrected_count/interval;
 
@@ -43,37 +43,24 @@ void quark_json_parse(char *string) {
     unsigned long booleans_count = 0, strings_count = 0;
     _Bool check_previous_vector = 0;
     for (unsigned long i = 0; i < vector_count; i++) {
-        __m256i block = quark_json_parse_m256i(string, i * interval);
+        const unsigned long byte_offset = i * interval;
+        __m256i block = quark_json_parse_m256i(string, byte_offset);
 
-        __m256i brackets_curley_open = _mm256_cmpeq_epi8(block, char_vector_brackets_curley_open);
+        //__m256i brackets_curley_open = _mm256_cmpeq_epi8(block, char_vector_brackets_curley_open);
         __m256i quotation_marks = _mm256_cmpeq_epi8(block, char_vector_quotation_marks);
         __m256i booleans_true = _mm256_cmpeq_epi8(block, char_vector_booleans_true);
-        __m256i booleans_false = _mm256_cmpeq_epi8(block, char_vector_booleans_false);
+        //__m256i booleans_false = _mm256_cmpeq_epi8(block, char_vector_booleans_false);
 
         __m256i value_separators = _mm256_cmpeq_epi8(block, char_vector_value_separators);
 
-        __m256i strings_test = _mm256_or_si256(quotation_marks, value_separators);
+        //__m256i strings_test = _mm256_or_si256(quotation_marks, value_separators);
         __m256i booleans_true_test = _mm256_or_si256(value_separators, booleans_true);
-        __m256i booleans_false_test = _mm256_or_si256(value_separators, booleans_false);
-        __m256i jsons_test = _mm256_or_si256(value_separators, brackets_curley_open);
+        //__m256i booleans_false_test = _mm256_or_si256(value_separators, booleans_false);
+        //__m256i jsons_test = _mm256_or_si256(value_separators, brackets_curley_open);
         
-        printf("quark_json_print strings_test\n");
-        quark_json_print(strings_test);
-        printf("\n");
-        
-        printf("quark_json_print booleans_true_test\n");
+        const int has_boolean_true = _mm256_testzc_si256(value_separators, booleans_true);
+        printf("quark_json_print booleans_true_test - offset=%lu, has_boolean_true=%d\n", byte_offset, has_boolean_true);
         quark_json_print(booleans_true_test);
-        printf("\n");
-
-        printf("quark_json_print booleans_false_test\n");
-        quark_json_print(booleans_false_test);
-        printf("\n");
-
-        printf("quark_json_print jsons_test\n");
-        quark_json_print(jsons_test);
-        printf("\n");
-
-        //vectors[i / interval] = block;
     }
 
     printf("values_count=%lu, strings_count=%lu\n", values_count, strings_count);
