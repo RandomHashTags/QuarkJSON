@@ -10,6 +10,8 @@
 #define BRACKET_SQUARE_OPEN '['
 #define BRACKET_SQUARE_CLOSE ']'
 #define MARK_QUOTATION '"'
+#define VALUE_SEPARATOR ':'
+#define COMMA ','
 
 struct QuarkJSONObject {
     unsigned long booleans_count;
@@ -25,7 +27,8 @@ struct QuarkJSONObjectValueBoolean {
 
 void quark_json_print(__m256i vector);
 void quark_json_get_characters(__m256i vector, unsigned char offset, unsigned char length, char *characters);
-__m256i quark_json_get_character_vector(char character);
+__m256i quark_json_parse_m256i(const char *string, const unsigned char offset);
 
-void quark_json_test_parser(void);
-void quark_json_test_stringify(struct QuarkJSONObject *json);
+void quark_json_parse(char *string);
+
+void quark_json_stringify(struct QuarkJSONObject *json);

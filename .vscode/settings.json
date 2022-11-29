@@ -12,6 +12,9 @@
         "bitset": "c",
         "json_object.h": "c",
         "nmmintrin.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "string": "c",
+        "iosfwd": "c",
+        "chrono": "c"
     }
 }

@@ -17,39 +17,69 @@ void quark_json_get_characters(__m256i vector, unsigned char offset, unsigned ch
     }
 }
 
-__m256i quark_json_get_character_vector(char character) {
-    return _mm256_set_epi8(character, character, character, character, character, character, character, character, character, character, character, character, character, character, character, character,
-                                                character, character, character, character, character, character, character, character, character, character, character, character, character, character, character, character);
+__m256i quark_json_parse_m256i(const char *string, const unsigned char offset) {
+    return _mm256_setr_epi8(string[offset], string[offset+1], string[offset+2], string[offset+3], string[offset+4], string[offset+5], string[offset+6], string[offset+7], string[offset+8], string[offset+9], string[offset+10], string[offset+11], string[offset+12], string[offset+13], string[offset+14], string[offset+15],
+                                    string[offset+16], string[offset+17], string[offset+18], string[offset+19], string[offset+20], string[offset+21], string[offset+22], string[offset+23], string[offset+24], string[offset+25], string[offset+26], string[offset+27], string[offset+28], string[offset+29], string[offset+30], string[offset+31]);
 }
 
-void quark_json_test_parser(void) {
-    const char *test_json = "{\"are you kidding me brotato chip in dip!\":\"lil' bro123456789o?\"}";
-    const unsigned long count = strlen(test_json), interval = 32, remainder = count % interval;
+void quark_json_parse(char *string) {
+    const unsigned long count = strlen(string), interval = 64, remainder = count % interval;
     const unsigned long corrected_count = count + (remainder > 0 ? interval - remainder : 0);
     const unsigned long vector_count = corrected_count/interval;
-    __m256i vectors[vector_count];
 
-    __m256i quotation_marks = quark_json_get_character_vector(MARK_QUOTATION);
-    __m256i bracket_curley_close = quark_json_get_character_vector(BRACKET_CURLEY_CLOSE);
+    const __m256i one = _mm256_set1_epi64x(1);
 
-    for (unsigned long i = 0; i < corrected_count; i += interval) {
-        __m256i bro = _mm256_setr_epi8(test_json[i], test_json[i+1], test_json[i+2], test_json[i+3], test_json[i+4], test_json[i+5], test_json[i+6], test_json[i+7], test_json[i+8], test_json[i+9], test_json[i+10], test_json[i+11], test_json[i+12], test_json[i+13], test_json[i+14], test_json[i+15],
-                                    test_json[i+16], test_json[i+17], test_json[i+18], test_json[i+19], test_json[i+20], test_json[i+21], test_json[i+22], test_json[i+23], test_json[i+24], test_json[i+25], test_json[i+26], test_json[i+27], test_json[i+28], test_json[i+29], test_json[i+30], test_json[i+31]);
-        vectors[i / interval] = bro;
-    }
+    const __m256i char_vector_quotation_marks = _mm256_set1_epi8(MARK_QUOTATION);
+    const __m256i char_vector_booleans_true = _mm256_set1_epi8('t');
+    const __m256i char_vector_booleans_false = _mm256_set1_epi8('f');
+    const __m256i char_vector_brackets_curley_open = _mm256_set1_epi8(BRACKET_CURLEY_OPEN);
+    //const __m256i char_vector_brackets_curley_close = _mm256_set1_epi8(BRACKET_CURLEY_CLOSE);
+    const __m256i char_vector_value_separators = _mm256_set1_epi8(VALUE_SEPARATOR);
+    const __m256i char_vector_commas = _mm256_set1_epi8(COMMA);
+
+    __m256i index;
+
+    unsigned long values_count = 0;
+    unsigned long booleans_count = 0, strings_count = 0;
+    _Bool check_previous_vector = 0;
     for (unsigned long i = 0; i < vector_count; i++) {
-        __m256i vector = vectors[i];
-        __m256i bro1 = _mm256_cmpeq_epi8(vector, quotation_marks);
-        printf("character=\", ");
-        quark_json_print(bro1);
+        __m256i block = quark_json_parse_m256i(string, i * interval);
 
-        __m256i bro2 = _mm256_cmpeq_epi8(vector, bracket_curley_close);
-        printf("character=}, ");
-        quark_json_print(bro2);
+        __m256i brackets_curley_open = _mm256_cmpeq_epi8(block, char_vector_brackets_curley_open);
+        __m256i quotation_marks = _mm256_cmpeq_epi8(block, char_vector_quotation_marks);
+        __m256i booleans_true = _mm256_cmpeq_epi8(block, char_vector_booleans_true);
+        __m256i booleans_false = _mm256_cmpeq_epi8(block, char_vector_booleans_false);
+
+        __m256i value_separators = _mm256_cmpeq_epi8(block, char_vector_value_separators);
+
+        __m256i strings_test = _mm256_or_si256(quotation_marks, value_separators);
+        __m256i booleans_true_test = _mm256_or_si256(value_separators, booleans_true);
+        __m256i booleans_false_test = _mm256_or_si256(value_separators, booleans_false);
+        __m256i jsons_test = _mm256_or_si256(value_separators, brackets_curley_open);
+        
+        printf("quark_json_print strings_test\n");
+        quark_json_print(strings_test);
+        printf("\n");
+        
+        printf("quark_json_print booleans_true_test\n");
+        quark_json_print(booleans_true_test);
+        printf("\n");
+
+        printf("quark_json_print booleans_false_test\n");
+        quark_json_print(booleans_false_test);
+        printf("\n");
+
+        printf("quark_json_print jsons_test\n");
+        quark_json_print(jsons_test);
+        printf("\n");
+
+        //vectors[i / interval] = block;
     }
+
+    printf("values_count=%lu, strings_count=%lu\n", values_count, strings_count);
 }
 
-void quark_json_test_stringify(struct QuarkJSONObject *json) {
+void quark_json_stringify(struct QuarkJSONObject *json) {
     char to_string[100000];
     to_string[0] = '{';
 
@@ -64,5 +94,5 @@ void quark_json_test_stringify(struct QuarkJSONObject *json) {
         quark_json_get_characters(boolean.key, 1, key_length, to_key);
     }
     to_string[byte] = '\0';
-    printf("quark_json_test_stringify; to_string=%s\n", to_string);
+    printf("quark_json_stringify; to_string=%s\n", to_string);
 }

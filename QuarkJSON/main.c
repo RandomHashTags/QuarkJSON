@@ -100,7 +100,7 @@ void benchmark_stringify(void) {
             least_bytes_per_nano = bytes_per_nano;
         }
     }
-    printf("benchmark_stringify; bytes=%lu, length=%lu, least/most gigabytes per second=%f/%f,\n", to_string_length, strlen(parsed_json_to_string), least_bytes_per_nano, most_bytes_per_nano);
+    printf("benchmark_stringify; bytes=%lu, length=%lu, least/most GB/s=%f/%f,\n", to_string_length, strlen(parsed_json_to_string), least_bytes_per_nano, most_bytes_per_nano);
     
     free(parsed_json_to_string);
     json_object_destroy(parsed_json_pointer);
@@ -118,17 +118,29 @@ void benchmark_parsing_from_file(void) {
     
     //char parsed_json_from_file_to_string[parsed_json_from_file.to_string_length];
     //json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
-    printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %luns (%Lfms, megabytes per second=%Lf)\n", to_string_length, to_string_length+1, took_ns, took_ms, megabytes_per_second);
+    printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %luns (%Lfms, MB/s=%Lf)\n", to_string_length, to_string_length+1, took_ns, took_ms, megabytes_per_second);
     //printf("%s\n", parsed_json_from_file_to_string);
     json_object_destroy(&parsed_json_from_file);
 }
 
 void benchmark_simd(void) {
+    FILE *file = fopen("test_json_small.json", "rb");
+    fseek(file, 0, SEEK_END);
+    const unsigned long file_length = ftell(file);
+    rewind(file);
+    
+    char buffer[file_length];
+    fread(buffer, file_length, 1, file);
+    fclose(file);
+
+    //struct JSONObject parsed_json;
     unsigned long took_ns = current_time_nano();
-    quark_json_test_parser();
+    //json_object_parse_fixed_size(buffer, 5369693, 80000, 300, 0, &parsed_json);
+    quark_json_parse(buffer);
     took_ns = current_time_nano() - took_ns;
     long double took_ms = (long double) took_ns / (long double) 1000000;
-    printf("benchmark_simd; quark_json_test took %Lfms (%luns)\n", took_ms, took_ns);
+    const long double megabytes_per_second = ((long double) 5369693 / (long double) took_ms) / 1000;
+    printf("benchmark_simd; quark_json_test took %Lfms (%luns, MB/s=%Lf)\n", took_ms, took_ns, megabytes_per_second);
 
     /*took_ns = current_time_nano();
     //quark_json_test_simd();
