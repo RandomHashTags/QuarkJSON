@@ -2,16 +2,14 @@
 #include "quark_json.h"
 
 void quark_json_print_char_values(__m256i vector) {
-    uint8_t values[32];
-    memcpy(values, &vector, sizeof(values));
+    char *values = (char *) &vector;
     printf("%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c|%c",
                     values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15],
                     values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31]
                     );
 }
 void quark_json_print_int_values(__m256i vector) {
-    uint8_t values[32];
-    memcpy(values, &vector, sizeof(values));
+    char *values = (char *) &vector;
     printf("%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i|%i",
                     values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7], values[8], values[9], values[10], values[11], values[12], values[13], values[14], values[15],
                     values[16], values[17], values[18], values[19], values[20], values[21], values[22], values[23], values[24], values[25], values[26], values[27], values[28], values[29], values[30], values[31]
@@ -66,12 +64,8 @@ void quark_json_parse(char *string, struct QuarkJSONObject *parsed_json) {
         __m256i is_letter_upper = _mm256_xor_si256(is_letter1, is_letter2);
         is_letter_lower = _mm256_xor_si256(is_letter_lower, is_letter_upper);*/
 
-        printf("quotation_marks=");
-        quark_json_print_int_values(quotation_marks);
-        printf("\n");
-
-        printf("bigboy=");
-        quark_json_print_int_values(quotation_marks);
+        //printf("quotation_marks=");
+        quark_json_print_char_values(block);
         printf("\n");
         //strings_count += 1;
 
