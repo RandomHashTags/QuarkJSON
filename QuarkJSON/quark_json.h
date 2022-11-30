@@ -1,6 +1,4 @@
 
-#include <smmintrin.h>
-#include <nmmintrin.h>
 #include <immintrin.h>
 #include <string.h>
 #include "json_object.h"
