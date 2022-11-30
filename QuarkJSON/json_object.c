@@ -145,6 +145,16 @@ void json_object_value_create_string(char *key, unsigned char key_length, char *
     };
     *string = value_string;
 }
+void json_object_value_create_number(char *key, unsigned char key_length, char *value, unsigned char value_length, struct JSONObjectValueNumber *number) {
+    struct JSONObjectValueNumber value_number = {
+        .key = key,
+        .key_length = key_length,
+        .value = value,
+        .value_length = value_length,
+        .to_string_length = key_length + value_length + 3
+    };
+    *number = value_number;
+}
 
 void json_object_value_boolean_to_string(struct JSONObjectValueBoolean *value_boolean, char *to_string) {
     const char *key = value_boolean->key;
@@ -461,13 +471,8 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
                         json_parse_number(string, string_length, byte, number_value_as_string, &number_value_length);
                         char *value = malloc(number_value_length * sizeof_char);
                         memcpy(value, number_value_as_string, number_value_length * sizeof_char);
-                        struct JSONObjectValueNumber number = {
-                            .key = key,
-                            .key_length = key_length,
-                            .value = value,
-                            .value_length = number_value_length,
-                            .to_string_length = key_length + 3 + number_value_length + 1
-                        };
+                        struct JSONObjectValueNumber number;
+                        json_object_value_create_number(key, key_length, value, number_value_length, &number);
                         numbers[numbers_count] = number;
                         numbers_count += 1;
                         byte += number_value_length;

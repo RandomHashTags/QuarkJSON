@@ -134,13 +134,14 @@ void benchmark_simd(void) {
     fclose(file);
 
     //struct JSONObject parsed_json;
+    struct QuarkJSONObject parsed_json;
     unsigned long took_ns = current_time_nano();
     //json_object_parse_fixed_size(buffer, 5369693, 80000, 300, 0, &parsed_json);
-    quark_json_parse(buffer);
+    quark_json_parse(buffer, &parsed_json);
     took_ns = current_time_nano() - took_ns;
     long double took_ms = (long double) took_ns / (long double) 1000000;
     const long double megabytes_per_second = ((long double) 5369693 / (long double) took_ms) / 1000;
-    printf("benchmark_simd; quark_json_test took %Lfms (%luns, MB/s=%Lf [GB/s=%Lf])\n", took_ms, took_ns, megabytes_per_second, megabytes_per_second/1000);
+    printf("benchmark_simd; took %Lfms to parse %lu bytes (%luns, MB/s=%Lf [GB/s=%Lf], %lu booleans_count, %lu strings_count)\n", took_ms, file_length, took_ns, megabytes_per_second, megabytes_per_second/1000, parsed_json.booleans_count, parsed_json.strings_count);
 
     /*took_ns = current_time_nano();
     //quark_json_test_simd();
