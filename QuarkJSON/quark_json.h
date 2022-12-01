@@ -11,6 +11,15 @@
 #define VALUE_SEPARATOR ':'
 #define COMMA ','
 
+struct QuarkJSONTest {
+
+};
+
+enum QuarkJSONTestValueType {
+    QUARK_JSON_TEST_VALUE_TYPE_STRING,
+    QUARK_JSON_TEST_VALUE_TYPE_BOOLEAN
+};
+
 struct QuarkJSONObject {
     unsigned long booleans_count;
     unsigned long strings_count;
