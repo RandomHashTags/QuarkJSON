@@ -66,6 +66,7 @@ void json_object_value_boolean_to_string(struct JSONObjectValueBoolean *value_bo
 void json_object_value_string_to_string(struct JSONObjectValueString *value_string, char *to_string);
 void json_object_value_number_to_string(struct JSONObjectValueNumber *value_number, char *to_string);
 
+void json_object_parse_from_file(const char *file_path, struct JSONObject *parsed_json);
 void json_object_parse_fixed_size_from_file(const char *file_path, const unsigned long string_count, const unsigned long boolean_count, const unsigned long number_count, struct JSONObject *parsed_json);
 
 void json_object_parse(const char *string, const unsigned long string_length, struct JSONObject *parsed_json);

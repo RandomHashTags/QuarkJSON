@@ -108,18 +108,23 @@ void benchmark_stringify(void) {
 
 void benchmark_parsing_from_file(void) {
     struct JSONObject parsed_json_from_file;
-    unsigned long took_ns = current_time_nano();
-    json_object_parse_fixed_size_from_file("test_json_big.json", 300, 80000, 0, &parsed_json_from_file);
-    //json_object_parse_fixed_size_from_file("test_json_small.json", 1, 1, 2, &parsed_json_from_file);
-    took_ns = current_time_nano() - took_ns;
+
+    clock_t now = clock();
+    //json_object_parse_fixed_size_from_file("test_json_big.json", 100, 80000, 0, &parsed_json_from_file);
+    json_object_parse_from_file("test_json_small.json", &parsed_json_from_file);
+    //json_object_parse_fixed_size_from_file("test_json_small.json", 2, 2, 2, &parsed_json_from_file);
+    now = clock() - now;
     const unsigned long to_string_length = parsed_json_from_file.to_string_length;
-    const long double took_ms = took_ns == 0 ? 1 : (long double) took_ns / (long double) 1000000;
-    const long double megabytes_per_second = ((long double) to_string_length / (long double) took_ms) / 1000;
+    double took_s = ((double) now) / CLOCKS_PER_SEC;
+    double took_ms = took_s * 1000;
+    double took_ns = took_ms * 1000000;
+    double bytes_per_milli = (double) to_string_length / took_ms;
+    double megabytes_per_second = (bytes_per_milli * 1000) / 1000000;
     
-    //char parsed_json_from_file_to_string[parsed_json_from_file.to_string_length];
-    //json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
-    printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %luns (%Lfms, MB/s=%Lf [GB/s=%Lf])\n", to_string_length, to_string_length+1, took_ns, took_ms, megabytes_per_second, megabytes_per_second/1000);
-    //printf("%s\n", parsed_json_from_file_to_string);
+    char parsed_json_from_file_to_string[to_string_length];
+    json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
+    printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, took %fms (%fns, MB/s=%f [GB/s=%f])\n", to_string_length, to_string_length+1, took_ms, took_ns, megabytes_per_second, megabytes_per_second/1000);
+    printf("%s\n", parsed_json_from_file_to_string);
     json_object_destroy(&parsed_json_from_file);
 }
 
@@ -140,7 +145,7 @@ void benchmark_simd(void) {
     quark_json_parse(buffer, &parsed_json);
     took_ns = current_time_nano() - took_ns;
     long double took_ms = (long double) took_ns / (long double) 1000000;
-    const long double megabytes_per_second = ((long double) 5369693 / (long double) took_ms) / 1000;
+    const long double megabytes_per_second = ((long double) 5369693 / (long double) took_ns) * 1000000;
     printf("benchmark_simd; took %Lfms to parse %lu bytes (%luns, MB/s=%Lf [GB/s=%Lf], %lu booleans_count, %lu strings_count)\n", took_ms, file_length, took_ns, megabytes_per_second, megabytes_per_second/1000, parsed_json.booleans_count, parsed_json.strings_count);
 
     /*took_ns = current_time_nano();
@@ -152,7 +157,7 @@ void benchmark_simd(void) {
 
 int main(int argc, const char *args[]) {
     //benchmark_stringify();
-    //benchmark_parsing_from_file();
-    benchmark_simd();
+    benchmark_parsing_from_file();
+    //benchmark_simd();
     return 1;
 }

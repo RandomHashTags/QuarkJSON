@@ -70,6 +70,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
     
     struct JSONObjectValueBoolean *booleans = json->booleans;
     const unsigned long booleans_count = json->booleans_count;
+    printf("test1\n");
     for (unsigned long i = 0; i < booleans_count; i++) {
         struct JSONObjectValueBoolean boolean = booleans[i];
         const unsigned long string_length = boolean.to_string_length;
@@ -85,6 +86,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
     
     const unsigned long strings_count = json->strings_count;
     struct JSONObjectValueString *strings = json->strings;
+    printf("test2\n");
     for (unsigned long i = 0; i < strings_count; i++) {
         struct JSONObjectValueString string = strings[i];
         const unsigned long string_length = string.to_string_length;
@@ -100,6 +102,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
 
     const unsigned long numbers_count = json->numbers_count;
     struct JSONObjectValueNumber *numbers = json->numbers;
+    printf("test3\n");
     for (unsigned long i = 0; i < numbers_count; i++) {
         struct JSONObjectValueNumber number = numbers[i];
         const unsigned long number_length = number.to_string_length;
@@ -112,6 +115,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += number_length;
         to_string[byte-1] = ',';
     }
+    printf("test4\n");
 
     to_string[byte-1] = '}';
     to_string[byte] = '\0';
@@ -221,6 +225,17 @@ void json_object_value_number_to_string(struct JSONObjectValueNumber *value_numb
     to_string[byte] = '\0';
 }
 
+void json_object_parse_from_file(const char *file_path, struct JSONObject *parsed_json) {
+    FILE *file = fopen(file_path, "rb");
+    fseek(file, 0, SEEK_END);
+    const unsigned long file_length = ftell(file);
+    rewind(file);
+    
+    char buffer[file_length];
+    fread(buffer, file_length, 1, file);
+    fclose(file);
+    json_object_parse(buffer, file_length-1, parsed_json);
+}
 void json_object_parse_fixed_size_from_file(const char *file_path, const unsigned long string_count, const unsigned long boolean_count, const unsigned long number_count, struct JSONObject *parsed_json) {
     FILE *file = fopen(file_path, "rb");
     fseek(file, 0, SEEK_END);
@@ -238,6 +253,11 @@ void json_object_parse(const char *string, const unsigned long string_length, st
 }
 static void json_object_parse_starting_at(unsigned long byte, const char *string, const unsigned long string_length, struct JSONObject *parsed_json) {
     // TODO: finish `json_object_parse_fixed_size_starting_at` first
+    const size_t sizeof_char = sizeof(char);
+    const size_t sizeof_boolean = sizeof(struct JSONObjectValueBoolean);
+    const size_t sizeof_string = sizeof(struct JSONObjectValueString);
+    const size_t sizeof_number = sizeof(struct JSONObjectValueNumber);
+
     char *key = NULL;
     unsigned char key_length = 0;
     char string_key_array[128];
@@ -247,21 +267,16 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
     unsigned char number_value_length;
     
     unsigned long booleans_count = 0;
-    struct JSONObjectValueBoolean **booleans = alloca(100 * sizeof(struct JSONObjectValueBoolean *));
+    struct JSONObjectValueBoolean *booleans[100];
 
     unsigned long strings_count = 0;
-    struct JSONObjectValueString **strings = alloca(100 * sizeof(struct JSONObjectValueString *));
+    struct JSONObjectValueString *strings[100];
 
     unsigned long numbers_count = 0;
-    struct JSONObjectValueNumber **numbers = alloca(100 * sizeof(struct JSONObjectValueNumber *));
+    struct JSONObjectValueNumber *numbers[100];
 
     unsigned long jsons_count = 0;
     struct JSONObject *jsons[100];
-
-    const size_t sizeof_char = sizeof(char);
-    const size_t sizeof_boolean = sizeof(struct JSONObjectValueBoolean);
-    const size_t sizeof_string = sizeof(struct JSONObjectValueString);
-    const size_t sizeof_number = sizeof(struct JSONObjectValueNumber);
     
     for (; byte < string_length; byte++) {
         char target_character = string[byte];
@@ -281,13 +296,12 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                 byte += 1;
                 json_parse_string(string, string_length, byte, string_key_array);
                 key_length = strlen(string_key_array);
-                char *parsed_string = malloc(key_length);
-                if (!parsed_string) {
-                    json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
+                key = malloc(key_length);
+                if (!key) {
+                    //json_object_destroy_elements(booleans_count, booleans, strings_count, strings, numbers_count, &numbers);
                     return;
                 }
-                memcpy(parsed_string, string_key_array, key_length * sizeof_char);
-                key = parsed_string;
+                memcpy(key, string_key_array, key_length * sizeof_char);
                 byte += key_length;
                 break;
             } case ':': {
@@ -306,48 +320,41 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
                     case '8':
                     case '9': {
                         json_parse_number(string, string_length, byte, number_value_as_string, &number_value_length);
-                        char *value = malloc(number_value_length * sizeof_char);
-                        memcpy(value, number_value_as_string, number_value_length * sizeof_char);
-                        struct JSONObjectValueNumber *number = malloc(sizeof_number);
-                        if (!number) {
-                            json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
-                            return;
-                        }
-                        json_object_value_create_number(key, key_length, value, number_value_length, number);
-                        numbers[numbers_count] = number;
-                        numbers_count += 1;
                         byte += number_value_length;
+                        char *value = malloc(number_value_length * sizeof_char);
+                        if (!value) {
+                            break;
+                        }
+                        memcpy(value, number_value_as_string, number_value_length * sizeof_char);
+                        struct JSONObjectValueNumber value_number;
+                        json_object_value_create_number(key, key_length, value, number_value_length, &value_number);
+                        memcpy(&numbers[numbers_count], &value_number, sizeof_number);
+                        numbers_count += 1;
                         break;
                     } case 'n': {
                         break;
                     } case 'f':
                     case 't': {
-                        struct JSONObjectValueBoolean *value_boolean = malloc(sizeof_boolean);
-                        if (!value_boolean) {
-                            json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
-                            return;
-                        }
                         const _Bool value = target_character == 't';
-                        json_object_value_create_boolean(key, key_length, value, value_boolean);
-                        booleans[booleans_count] = value_boolean;
-                        booleans_count += 1;
                         byte += 4 + !value;
+                        struct JSONObjectValueBoolean value_boolean;
+                        json_object_value_create_boolean(key, key_length, value, &value_boolean);
+                        memcpy(&booleans[booleans_count], &value_boolean, sizeof_boolean);
+                        booleans_count += 1;
                         break;
                     } case '"': {
-                        byte += 1;
-                        json_parse_string(string, string_length, byte, string_value_array);
+                        json_parse_string(string, string_length, byte+1, string_value_array);
                         const unsigned char value_length = strlen(string_value_array);
+                        byte += value_length + 2;
                         char *value = malloc(value_length);
-                        memcpy(value, string_value_array, value_length * sizeof_char);
-                        struct JSONObjectValueString *value_string = malloc(sizeof_string);
-                        if (!value_string) {
-                            json_object_destroy_elements(booleans_count, *booleans, strings_count, *strings, numbers_count, *numbers);
-                            return;
+                        if (!value) {
+                            break;
                         }
-                        json_object_value_create_string(key, key_length, value, value_length, value_string);                   
-                        strings[strings_count] = value_string;
+                        memcpy(value, string_value_array, value_length * sizeof_char);
+                        struct JSONObjectValueString value_string;
+                        json_object_value_create_string(key, key_length, value, value_length, &value_string);
+                        memcpy(&strings[strings_count], &value_string, sizeof_string);
                         strings_count += 1;
-                        byte += value_length + 1;
                         break;
                     } default: {
                         break;
@@ -359,18 +366,23 @@ static void json_object_parse_starting_at(unsigned long byte, const char *string
             }
         }
     }
-
     const size_t booleans_size = booleans_count * sizeof(struct JSONObjectValueBoolean);
     struct JSONObjectValueBoolean *booleans_heap = malloc(booleans_size);
-    booleans_heap = *booleans;
+    for (int i = 0; i < booleans_count; i++) {
+        memcpy(&booleans_heap[i], &booleans[i], sizeof_boolean);
+    }
 
     const size_t strings_size = strings_count * sizeof(struct JSONObjectValueString);
     struct JSONObjectValueString *strings_heap = malloc(strings_size);
-    strings_heap = *strings;
+    for (int i = 0; i < strings_count; i++) {
+        memcpy(&strings_heap[i], &strings[i], sizeof_string);
+    }
 
     const size_t numbers_size = numbers_count * sizeof(struct JSONObjectValueNumber);
     struct JSONObjectValueNumber *numbers_heap = malloc(numbers_size);
-    numbers_heap = *numbers;
+    for (int i = 0; i < numbers_count; i++) {
+        memcpy(&numbers_heap[i], &numbers[i], sizeof_number);
+    }
 
     const size_t jsons_size = jsons_count * sizeof(struct JSONObject);
     struct JSONObject *jsons_heap = malloc(jsons_size);
@@ -433,25 +445,13 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
     for (; byte < string_length; byte++) {
         char target_character = string[byte];
         switch (target_character) {
-            case '{': {
-                byte += 1;
-                struct JSONObject target_json;
-                json_object_parse_fixed_size_starting_at(byte, string, string_length, 1, 1, 1, &target_json); // TODO: calculate or parse correct counts
-                jsons[jsons_count] = target_json;
-                jsons_count += 1;
-                byte += target_json.to_string_length;
-                break;
-            } case '[': {
-                // TODO: finish
-                break;
-            } case '"': {
-                byte += 1;
-                json_parse_string(string, string_length, byte, string_key_array);
+            case '"': {
+                json_parse_string(string, string_length, byte+1, string_key_array);
                 key_length = strlen(string_key_array);
                 char *parsed_string = malloc(key_length);
                 memcpy(parsed_string, string_key_array, key_length * sizeof_char);
                 key = parsed_string;
-                byte += key_length;
+                byte += key_length + 1;
                 break;
             } case ':': {
                 byte += 1;
@@ -489,8 +489,7 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
                         byte += 4 + !value;
                         break;
                     } case '"': {
-                        byte += 1;
-                        json_parse_string(string, string_length, byte, string_value_array);
+                        json_parse_string(string, string_length, byte+1, string_value_array);
                         const unsigned char value_length = strlen(string_value_array);
                         char *value = malloc(value_length);
                         memcpy(value, string_value_array, value_length * sizeof_char);
@@ -498,7 +497,17 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
                         json_object_value_create_string(key, key_length, value, value_length, &value_string);
                         strings[strings_count] = value_string;
                         strings_count += 1;
-                        byte += value_length + 1;
+                        byte += value_length + 2;
+                        break;
+                    } case '{': {
+                        struct JSONObject target_json;
+                        json_object_parse_fixed_size_starting_at(byte+1, string, string_length, 1, 1, 1, &target_json); // TODO: calculate or parse correct counts
+                        jsons[jsons_count] = target_json;
+                        jsons_count += 1;
+                        byte += target_json.to_string_length + 1;
+                        break;
+                    } case '[': {
+                        // TODO: finish
                         break;
                     } default: {
                         break;
@@ -560,6 +569,7 @@ static void json_parse_string(const char *string, const unsigned long string_len
         const char target_character = string[i];
         switch (target_character) {
             case '"': {
+                goto parsed;
                 break;
             } default: {
                 parsed_string[index] = target_character;
