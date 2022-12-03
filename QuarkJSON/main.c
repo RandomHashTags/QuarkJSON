@@ -74,7 +74,7 @@ void benchmark_stringify(void) {
     
     struct JSONObject parsed_json;
     struct JSONObject *parsed_json_pointer = &parsed_json;
-    json_object_parse_fixed_size(to_string, to_string_length, strings_count, booleans_count, numbers_count, parsed_json_pointer);
+    json_object_parse(to_string, to_string_length, parsed_json_pointer);
     char *parsed_json_to_string = malloc(to_string_length * sizeof(char));
     
     double least_bytes_per_nano = 0, most_bytes_per_nano = 0;
@@ -110,9 +110,9 @@ void benchmark_parsing_from_file(void) {
     struct JSONObject parsed_json_from_file;
 
     clock_t now = clock();
-    //json_object_parse_fixed_size_from_file("test_json_big.json", 100, 80000, 0, &parsed_json_from_file);
+    //json_object_parse_from_file("test_json_big.json", &parsed_json_from_file);
     json_object_parse_from_file("test_json_small.json", &parsed_json_from_file);
-    //json_object_parse_fixed_size_from_file("test_json_small.json", 2, 2, 2, &parsed_json_from_file);
+    //json_object_parse_file("test_json_small.json", &parsed_json_from_file);
     now = clock() - now;
     const unsigned long to_string_length = parsed_json_from_file.to_string_length;
     double took_s = ((double) now) / CLOCKS_PER_SEC;

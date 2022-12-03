@@ -11,6 +11,10 @@
 #include <stdio.h>
 
 struct JSONObject {
+    _Bool has_key;
+    unsigned char key_length;
+    char *key;
+
     unsigned long booleans_count;
     struct JSONObjectValueBoolean *booleans;
     
@@ -50,7 +54,8 @@ struct JSONObjectValueNumber {
 };
 
 void json_object_destroy(struct JSONObject *json);
-static void json_object_destroy_elements(const unsigned long booleans_count, struct JSONObjectValueBoolean *booleans, const unsigned long strings_count, struct JSONObjectValueString *strings, const unsigned long numbers_count, struct JSONObjectValueNumber *numbers);
+static void json_object_destroy_heap_elements(const unsigned long booleans_count, struct JSONObjectValueBoolean *booleans, const unsigned long strings_count, struct JSONObjectValueString *strings, const unsigned long numbers_count, struct JSONObjectValueNumber *numbers, const unsigned long jsons_count, struct JSONObject *jsons);
+static void json_object_destroy_stack_elements(const unsigned long booleans_count, struct JSONObjectValueBoolean *booleans, const unsigned long strings_count, struct JSONObjectValueString *strings, const unsigned long numbers_count, struct JSONObjectValueNumber *numbers, const unsigned long jsons_count, struct JSONObject *jsons);
 
 void json_object_calculate_string_length(struct JSONObject *json);
 void json_object_to_string(struct JSONObject *json, char *to_string);
