@@ -45,7 +45,7 @@ static void json_object_destroy_stack_elements(const unsigned long booleans_coun
 }
 
 void json_object_calculate_string_length(struct JSONObject *json) {
-    unsigned long bytes = 1;
+    unsigned long bytes = 2;
     
     const unsigned long booleans_count = json->booleans_count;
     struct JSONObjectValueBoolean *booleans = json->booleans;
@@ -72,10 +72,10 @@ void json_object_calculate_string_length(struct JSONObject *json) {
     struct JSONObject *jsons = json->jsons;
     for (unsigned long i = 0; i < jsons_count; i++) {
         struct JSONObject json = jsons[i];
-        bytes += json.to_string_length + 1;
+        bytes += json.to_string_length + 1 + (json.has_key ? json.key_length + 3 : 0);
     }
 
-    json->to_string_length = bytes;
+    json->to_string_length = bytes-1;
 }
 
 void json_object_to_string(struct JSONObject *json, char *to_string) {
@@ -162,7 +162,7 @@ void json_object_value_create_boolean(char *key, unsigned char key_length, _Bool
         .key = key,
         .key_length = key_length,
         .value = value,
-        .to_string_length = key_length + 3 + (value ? 4 : 5)
+        .to_string_length = key_length + 7 + !value
     };
     *boolean = value_boolean;
 }
@@ -387,7 +387,6 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
                         target_json.key = key;
                         target_json.key_length = key_length;
                         const unsigned long length = target_json.to_string_length;
-                        target_json.to_string_length += key_length + 3;
                         jsons[jsons_count] = target_json;
                         jsons_count += 1;
                         byte += length;

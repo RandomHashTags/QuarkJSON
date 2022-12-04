@@ -112,7 +112,7 @@ void benchmark_parsing_from_file(void) {
     clock_t now = clock();
     //json_object_parse_from_file("test_json_big.json", &parsed_json_from_file);
     json_object_parse_from_file("test_json_medium.json", &parsed_json_from_file);
-    //json_object_parse_file("test_json_small.json", &parsed_json_from_file);
+    //son_object_parse_from_file("test_json_small.json", &parsed_json_from_file);
     now = clock() - now;
     const unsigned long to_string_length = parsed_json_from_file.to_string_length;
     double took_s = ((double) now) / CLOCKS_PER_SEC;
