@@ -1,6 +1,6 @@
 # QuarkJSON
 Native C JSON parser, emphasized on performance and system resource efficiency.
-- !!!!!   right now the parser only parses booleans, strings, and numbers   !!!!!
+- !!!!!   right now the parser only parses booleans, strings, numbers, and JSONs   !!!!!
 
 ## Etymology
 QuarkJSON's name is heavily influenced by the subatomic particle; the Quark makes up every _thing_. JSON pretty much makes up everything on server API's.

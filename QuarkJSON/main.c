@@ -113,7 +113,7 @@ void benchmark_parsing_from_file(void) {
     //json_object_parse_fixed_size(buffer, file_length-1, 80000, 300, 0, 0, &parsed_json_from_file);
     //json_object_parse_fixed_size_from_file("test_json_big.json", 80000, 300, 0, 0, &parsed_json_from_file);
     //json_object_parse_from_file("test_json_medium.json", &parsed_json_from_file);
-    json_object_parse_from_file("test_json_small.json", &parsed_json_from_file);
+    json_object_parse_from_file("test_json_api_weather_gov_fragment.json", &parsed_json_from_file);
     now = clock() - now;
     const unsigned long to_string_length = parsed_json_from_file.to_string_length;
     double took_s = ((double) now) / CLOCKS_PER_SEC;
@@ -123,9 +123,9 @@ void benchmark_parsing_from_file(void) {
     double megabytes_per_second = bytes_per_milli / 1000;
     
     char parsed_json_from_file_to_string[to_string_length];
-    json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
+    //json_object_to_string(&parsed_json_from_file, parsed_json_from_file_to_string);
     printf("benchmark_parsing_from_file; bytes=%lu, length=%lu, strings_count=%lu, took %fms (%luns, MB/s=%f [GB/s=%f])\n", to_string_length, strlen(parsed_json_from_file_to_string), parsed_json_from_file.strings_count, took_ms, took_ns, megabytes_per_second, megabytes_per_second/1000);
-    printf("%s\n", parsed_json_from_file_to_string);
+    //printf("%s\n", parsed_json_from_file_to_string);
     //json_object_destroy(&parsed_json_from_file); // TODO: only delete if created from heap
 }
 
