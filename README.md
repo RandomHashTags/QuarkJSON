@@ -1,6 +1,6 @@
 # QuarkJSON
 Native C JSON parser, emphasized on performance and system resource efficiency.
-- !!!!!   right now the parser only parses booleans, strings, numbers, and JSONs   !!!!!
+- !!!!!   right now the parser only parses booleans, strings, numbers, and JSONObjects   !!!!!
 
 ## Etymology
 QuarkJSON's name is heavily influenced by the subatomic particle; the Quark makes up every _thing_. JSON pretty much makes up everything on server API's.
@@ -39,4 +39,4 @@ file:
 - TODO
 
 ## License
-Creative Commons Zero v1.0 Universal. AKA, public domain. I chose this license because I enjoy sharing knowledge.
+Public Domain. Creative Commons Zero v1.0 Universal.
