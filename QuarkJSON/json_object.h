@@ -9,6 +9,16 @@
 #define json_object_h
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <unistd.h>
+
+#define JSON_MAXIMUM_STRING_VALUE_LENGTH 1100
 
 struct JSONObject {
     _Bool has_key;
@@ -90,6 +100,7 @@ struct JSONArrayValueNumber {
     unsigned char number_length;
 };
 
+
 /*
     JSONObject functionality
 */
@@ -131,6 +142,9 @@ void json_object_get_json(const struct JSONObject *json, const char *key, struct
 
 void json_array_calculate_string_length(struct JSONArray *array);
 void json_array_to_string(struct JSONArray *array, char *to_string);
+
+void json_array_parse_from_file(const char *file_path, struct JSONArray *parsed_array);
+void json_array_parse_fixed_size_from_file(const char *file_path, const unsigned long value_count, struct JSONArray *parsed_array);
 
 void json_array_parse(const char *string, const unsigned long string_length, struct JSONArray *parsed_array);
 static void json_array_parse_starting_at(unsigned long byte, const char *string, const unsigned long string_length, struct JSONArray *parsed_array);

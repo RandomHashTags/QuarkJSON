@@ -5,18 +5,7 @@
 //  Created by Evan Anderson on 11/25/22.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <assert.h>
-#include <unistd.h>
 #include "json_object.h"
-
-#define JSON_MAXIMUM_STRING_VALUE_LENGTH 1100
 
 /*
     JSONObject functionality
@@ -93,16 +82,15 @@ void json_object_calculate_string_length(struct JSONObject *json) {
         struct JSONArray array = arrays[i];
         bytes += array.to_string_length + 1 + (array.has_key ? array.key_length + 3 : 0);
     }
-
+    
     json->to_string_length = bytes-1;
 }
 
 void json_object_to_string(struct JSONObject *json, char *to_string) {
-    printf("json_object_to_string json to_string_length=%lu, key=%s\n", json->to_string_length, json->has_key ? json->key : "NULL");
     to_string[0] = '{';
     
     unsigned long byte = 1;
-    
+
     struct JSONObjectValueBoolean *booleans = json->booleans;
     const unsigned long booleans_count = json->booleans_count;
     for (unsigned long i = 0; i < booleans_count; i++) {
@@ -117,7 +105,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += string_length + 1;
         to_string[byte-1] = ',';
     }
-    
     const unsigned long strings_count = json->strings_count;
     struct JSONObjectValueString *strings = json->strings;
     for (unsigned long i = 0; i < strings_count; i++) {
@@ -132,7 +119,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += string_length + 1;
         to_string[byte-1] = ',';
     }
-
     const unsigned long numbers_count = json->numbers_count;
     struct JSONObjectValueNumber *numbers = json->numbers;
     for (unsigned long i = 0; i < numbers_count; i++) {
@@ -147,44 +133,33 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += number_length + 1;
         to_string[byte-1] = ',';
     }
-
     const unsigned long jsons_count = json->jsons_count;
     struct JSONObject *jsons = json->jsons;
-    printf("test1, jsons_count=%lu\n", jsons_count);
     for (unsigned long i = 0; i < jsons_count; i++) {
         struct JSONObject target_json = jsons[i];
         to_string[byte] = '"';
         byte += 1;
         const char *key = target_json.key;
         const unsigned char key_length = target_json.key_length;
-        const unsigned long json_length = target_json.to_string_length;
-        printf("test1.1, json_length=%lu\n", json_length);
-        printf("test1.2, key_length=%d\n", key_length);
-        printf("test1.3, key=%s\n", key);
         for (unsigned long j = 0; j < key_length; j++) {
             to_string[byte + j] = key[j];
         }
-        printf("test2, key=%s\n", key);
         byte += key_length + 2;
         to_string[byte-2] = '"';
         to_string[byte-1] = ':';
 
-        
-        printf("test3, json_length=%lu\n", json_length);
+        const unsigned long json_length = target_json.to_string_length;
         char json_to_string[json_length];
         json_object_to_string(&target_json, json_to_string);
-        printf("test4, json_to_string=%s\n", json_to_string);
         for (unsigned long j = 0; j < json_length; j++) {
             to_string[byte + j] = json_to_string[j];
         }
         byte += json_length + 1;
         to_string[byte-1] = ',';
-        printf("test5\n");
     }
 
     const unsigned long arrays_count = json->arrays_count;
     struct JSONArray *arrays = json->arrays;
-    printf("test6, arrays_count=%lu\n", arrays_count);
     for (unsigned long i = 0; i < arrays_count; i++) {
         struct JSONArray target_array = arrays[i];
         to_string[byte] = '"';
@@ -197,19 +172,15 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += key_length + 2;
         to_string[byte-2] = '"';
         to_string[byte-1] = ':';
-        printf("test7, key=%s\n", key);
 
         const unsigned long array_length = target_array.value_count;
-        printf("test8, array_length=%lu\n", array_length);
         char array_to_string[array_length];
         json_array_to_string(&target_array, array_to_string);
-        printf("test9, array_to_string=%s\n", array_to_string);
         for (unsigned long j = 0; j < array_length; j++) {
             to_string[byte + j] = array_to_string[j];
         }
         byte += array_length + 1;
         to_string[byte-1] = ',';
-        printf("test10\n");
     }
 
     to_string[byte-1] = '}';
@@ -316,11 +287,11 @@ void json_object_parse_from_file(const char *file_path, struct JSONObject *parse
     json_object_parse_fixed_size_from_file(file_path, 25, 15, 15, 10, 10, parsed_json);
 }
 void json_object_parse_fixed_size_from_file(const char *file_path, const unsigned long string_count, const unsigned long boolean_count, const unsigned long number_count, const unsigned long json_count, const unsigned long array_count, struct JSONObject *parsed_json) {
-    int fd; 
-    struct stat statistic; 
-    char *buffer; 
+    int fd;
+    struct stat statistic;
+    char *buffer;
     assert((fd = open(file_path, O_RDONLY))>= 0); 
-    assert(fstat(fd, &statistic) == 0); 
+    assert(fstat(fd, &statistic) == 0);
     assert((buffer = (char *) mmap(NULL, statistic.st_size, PROT_READ, MAP_SHARED, fd, 0)) != NULL);
     json_object_parse_fixed_size(buffer, statistic.st_size, string_count, boolean_count, number_count, json_count, array_count, parsed_json);
 }
@@ -523,7 +494,6 @@ void json_object_get_json(const struct JSONObject *json, const char *key, struct
     }
 }
 
-
 /*
     JSONArray functionality
 */
@@ -536,7 +506,7 @@ void json_array_calculate_string_length(struct JSONArray *array) {
         case JSON_ARRAY_VALUE_TYPE_STRINGS: {
             struct JSONArrayValueString *strings = array->strings;
             for (unsigned long i = 0; i < value_count; i++) {
-                bytes += strings[i].string_length + 3;
+                bytes += 3 + strings[i].string_length;
             }
             break;
         } case JSON_ARRAY_VALUE_TYPE_BOOLEANS: {
@@ -601,6 +571,19 @@ void json_array_to_string(struct JSONArray *array, char *to_string) {
     to_string[byte] = '\0';
 }
 
+void json_array_parse_from_file(const char *file_path, struct JSONArray *parsed_array) {
+    json_array_parse_fixed_size_from_file(file_path, 10, parsed_array);
+}
+void json_array_parse_fixed_size_from_file(const char *file_path, const unsigned long value_count, struct JSONArray *parsed_array) {
+    int fd;
+    struct stat statistic;
+    char *buffer;
+    assert((fd = open(file_path, O_RDONLY))>= 0); 
+    assert(fstat(fd, &statistic) == 0);
+    assert((buffer = (char *) mmap(NULL, statistic.st_size, PROT_READ, MAP_SHARED, fd, 0)) != NULL);
+    json_array_parse_fixed_size_starting_at(1, buffer, statistic.st_size, value_count, parsed_array);
+}
+
 void json_array_parse(const char *string, const unsigned long string_length, struct JSONArray *parsed_array) {
     json_array_parse_starting_at(1, string, string_length, parsed_array);
 }
@@ -611,6 +594,7 @@ void json_array_parse_fixed_size(const char *string, const unsigned long string_
     json_array_parse_fixed_size_starting_at(1, string, string_length, value_count, parsed_array);
 }
 static void json_array_parse_fixed_size_starting_at(unsigned long byte, const char *string, const unsigned long string_length, const unsigned long value_count, struct JSONArray *parsed_array) {
+    printf("json_array_parse_fixed_size_starting_at; byte=%lu\n", byte);
     const size_t sizeof_char = sizeof(char);
 
     const char type_char = string[byte];
@@ -632,13 +616,15 @@ static void json_array_parse_fixed_size_starting_at(unsigned long byte, const ch
 
     for (; byte < string_length; byte++) {
         char target_character = string[byte];
+        printf("target_character=%c\n", target_character);
         switch (target_character) {
             case ']': {
                 byte = string_length;
                 break;
             } case '"': {
+                byte += 1;
                 char target_string[JSON_MAXIMUM_STRING_VALUE_LENGTH];
-                json_parse_string(string, string_length, byte+1, target_string);
+                json_parse_string(string, string_length, byte, target_string);
                 unsigned short target_string_length = strlen(target_string);
                 char *key = alloca(target_string_length * sizeof_char);
                 strcpy(key, target_string);
@@ -648,7 +634,7 @@ static void json_array_parse_fixed_size_starting_at(unsigned long byte, const ch
                 };
                 values_string[values_count] = value_string;
                 values_count += 1;
-                byte += target_string_length + 1;
+                byte += target_string_length;
                 break;
             } case 't':
             case 'f': {
@@ -662,14 +648,14 @@ static void json_array_parse_fixed_size_starting_at(unsigned long byte, const ch
                 json_object_parse_starting_at(byte+1, string, string_length, &target_json);
                 values_jsons[values_count] = target_json;
                 values_count += 1;
-                byte += target_json.to_string_length - 1;
+                byte += target_json.to_string_length;
                 break;
             } case '[': {
                 struct JSONArray target_array;
                 json_array_parse_starting_at(byte+1, string, string_length, parsed_array);
                 values_arrays[values_count] = target_array;
                 values_count += 1;
-                byte += target_array.to_string_length - 1;
+                byte += target_array.to_string_length;
                 break;
             } default: {
                 break;
@@ -697,6 +683,7 @@ static void json_array_parse_fixed_size_starting_at(unsigned long byte, const ch
         }
     }
     json_array_calculate_string_length(parsed_array);
+    printf("json_array_parse_fixed_size_starting_at; parsed with ending byte=%lu\n", byte);
 }
 
 /*
@@ -707,10 +694,7 @@ static void json_parse_number(const char *string, const unsigned long string_len
     for (unsigned long i = byte; i < string_length; i++) {
         const char target_character = string[i];
         switch (target_character) {
-            case ',': {
-                goto parsed;
-                break;
-            } case '-':
+            case '-':
             case '.':
             case '0':
             case '1':
@@ -734,6 +718,7 @@ static void json_parse_number(const char *string, const unsigned long string_len
 parsed:
     value_as_string[index] = '\0';
     *value_length = strlen(value_as_string);
+    printf("json_parse_number; parsed %s at byte %lu\n", value_as_string, byte);
 }
 static void json_parse_string(const char *string, const unsigned long string_length, unsigned long byte, char *parsed_string) {
     const unsigned long starting_byte = byte;
@@ -753,5 +738,5 @@ static void json_parse_string(const char *string, const unsigned long string_len
     }
 parsed:
     parsed_string[index] = '\0';
-    return;
+    printf("json_parse_string; parsed %s at byte %lu\n", parsed_string, byte);
 }
