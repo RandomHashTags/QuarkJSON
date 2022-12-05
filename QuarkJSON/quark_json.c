@@ -1,4 +1,6 @@
 
+#pragma GCC target("avx2")
+
 #include "quark_json.h"
 
 void quark_json_print_char_values(__m256i vector) {
@@ -22,7 +24,7 @@ void quark_json_get_characters(__m256i vector, unsigned char offset, unsigned ch
     }
 }
 
-__m256i quark_json_parse_block(const char *string, const unsigned char offset) {
+__m256i quark_json_parse_block(const char *string, const unsigned long offset) {
     return _mm256_setr_epi8(string[offset], string[offset+1], string[offset+2], string[offset+3], string[offset+4], string[offset+5], string[offset+6], string[offset+7], string[offset+8], string[offset+9], string[offset+10], string[offset+11], string[offset+12], string[offset+13], string[offset+14], string[offset+15],
                             string[offset+16], string[offset+17], string[offset+18], string[offset+19], string[offset+20], string[offset+21], string[offset+22], string[offset+23], string[offset+24], string[offset+25], string[offset+26], string[offset+27], string[offset+28], string[offset+29], string[offset+30], string[offset+31]);
 }
@@ -38,7 +40,6 @@ void quark_json_parse(char *string, struct QuarkJSONObject *parsed_json) {
     const __m256i char_vector_brackets_curley_open = _mm256_set1_epi8(BRACKET_CURLEY_OPEN);
     const __m256i char_vector_brackets_curley_close = _mm256_set1_epi8(BRACKET_CURLEY_CLOSE);
     const __m256i char_vector_value_separators = _mm256_set1_epi8(VALUE_SEPARATOR);
-    const __m256i char_vector_commas = _mm256_set1_epi8(COMMA);
 
     const __m256i char_vector_zero = _mm256_set1_epi8('0'-1);
     const __m256i char_vector_nine = _mm256_set1_epi8('9'+1);
@@ -58,25 +59,18 @@ void quark_json_parse(char *string, struct QuarkJSONObject *parsed_json) {
         __m256i block = quark_json_parse_block(string, byte_offset);
 
         __m256i quotation_marks = _mm256_cmpeq_epi8(block, char_vector_quotation_marks);
-        
-        __m256i is_letter1 = _mm256_cmpgt_epi8(block, char_vector_a_lower);
-        __m256i is_letter2 = _mm256_cmpgt_epi8(char_vector_z_lower, block);
-        __m256i is_letter_lower = _mm256_xor_si256(is_letter1, is_letter2);
-        is_letter1 = _mm256_cmpgt_epi8(block, char_vector_a_upper);
-        is_letter2 = _mm256_cmpgt_epi8(char_vector_z_upper, block);
-        __m256i is_letter_upper = _mm256_xor_si256(is_letter1, is_letter2);
-        __m256i is_letter = _mm256_xor_si256(is_letter_lower, is_letter_upper);
 
-        __m256i strings = _mm256_xor_si256(quotation_marks, is_letter);
+        __m256i inbetween_quotation_marks = _mm256_cmpgt_epi8(char_vector_indexes, quotation_marks);
+        __m256i inbetween_quotation_marks_index = _mm256_and_si256(block, inbetween_quotation_marks);
 
-        __m256i is_number = _mm256_cmpgt_epi8(block, char_vector_zero);
+        /*__m256i is_number = _mm256_cmpgt_epi8(block, char_vector_zero);
         __m256i is_not_number = _mm256_cmpgt_epi8(char_vector_nine, block);
-        is_number = _mm256_xor_si256(is_number, is_not_number);
+        is_number = _mm256_xor_si256(is_number, is_not_number);*/
 
         //__m256i test = _mm256_sub_epi8(block, strings);
 
-        printf("test=");
-        quark_json_print_char_values(block);
+        printf("block=");
+        quark_json_print_char_values(inbetween_quotation_marks_index);
         printf("\n");
         //strings_count += 1;
 

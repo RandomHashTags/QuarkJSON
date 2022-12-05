@@ -91,7 +91,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
     
     unsigned long byte = 1;
 
-    printf("test1\n");
     struct JSONObjectValueBoolean *booleans = json->booleans;
     const unsigned long booleans_count = json->booleans_count;
     for (unsigned long i = 0; i < booleans_count; i++) {
@@ -107,7 +106,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         to_string[byte-1] = ',';
     }
 
-    printf("test2\n");
     const unsigned long strings_count = json->strings_count;
     struct JSONObjectValueString *strings = json->strings;
     for (unsigned long i = 0; i < strings_count; i++) {
@@ -123,7 +121,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         to_string[byte-1] = ',';
     }
 
-    printf("test3\n");
     const unsigned long numbers_count = json->numbers_count;
     struct JSONObjectValueNumber *numbers = json->numbers;
     for (unsigned long i = 0; i < numbers_count; i++) {
@@ -139,7 +136,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         to_string[byte-1] = ',';
     }
 
-    printf("test4\n");
     const unsigned long jsons_count = json->jsons_count;
     struct JSONObject *jsons = json->jsons;
     for (unsigned long i = 0; i < jsons_count; i++) {
@@ -148,31 +144,23 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += 1;
         const char *key = target_json.key;
         const unsigned char key_length = target_json.key_length;
-        printf("test4.1, key=%s, key_length=%d\n", key, key_length);
         for (unsigned long j = 0; j < key_length; j++) {
             to_string[byte + j] = key[j];
         }
-        printf("test4.2\n");
         byte += key_length + 2;
         to_string[byte-2] = '"';
         to_string[byte-1] = ':';
 
-        printf("test4.3\n");
         const unsigned long json_length = target_json.to_string_length;
-        printf("test4.4, json_length=%lu\n", json_length);
         char json_to_string[json_length];
-        printf("test4.5\n");
         json_object_to_string(&target_json, json_to_string);
-        printf("test4.6\n");
         for (unsigned long j = 0; j < json_length; j++) {
             to_string[byte + j] = json_to_string[j];
         }
-        printf("test4.7\n");
         byte += json_length + 1;
         to_string[byte-1] = ',';
     }
 
-    printf("test5\n");
     const unsigned long arrays_count = json->arrays_count;
     struct JSONArray *arrays = json->arrays;
     for (unsigned long i = 0; i < arrays_count; i++) {
@@ -197,7 +185,6 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += array_length + 1;
         to_string[byte-1] = ',';
     }
-    printf("test6\n");
 
     to_string[byte-1] = '}';
     to_string[byte] = '\0';
@@ -306,7 +293,7 @@ void json_object_parse_fixed_size_from_file(const char *file_path, const unsigne
     int fd;
     struct stat statistic;
     char *buffer;
-    assert((fd = open(file_path, O_RDONLY))>= 0); 
+    assert((fd = open(file_path, O_RDONLY))>= 0);
     assert(fstat(fd, &statistic) == 0);
     assert((buffer = (char *) mmap(NULL, statistic.st_size, PROT_READ, MAP_SHARED, fd, 0)) != NULL);
     json_object_parse_fixed_size(buffer, statistic.st_size, string_count, boolean_count, number_count, json_count, array_count, parsed_json);
@@ -353,7 +340,6 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
                 char string_key_array[128];
                 json_parse_string(string, string_length, byte, string_key_array);
                 key_length = strlen(string_key_array);
-                key = alloca(key_length * sizeof_char);
                 strcpy(key, string_key_array);
                 byte += key_length;
                 break;
@@ -448,9 +434,6 @@ static void json_object_parse_fixed_size_starting_at(unsigned long byte, const c
     parsed_json->arrays_count = arrays_count;
     parsed_json->arrays = arrays;
     json_object_calculate_string_length(parsed_json);
-    //char parsed_json_to_string[parsed_json->to_string_length];
-    //json_object_to_string(parsed_json, parsed_json_to_string);
-    //printf("json_object_parse_fixed_size_starting_at; parsed, to_string_length=%lu\n", parsed_json->to_string_length);
 }
 
 _Bool json_object_get_boolean(const struct JSONObject *json, const char *key) {

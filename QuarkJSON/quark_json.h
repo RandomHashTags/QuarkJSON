@@ -33,7 +33,7 @@ struct QuarkJSONBlock {
 void quark_json_print_char_values(__m256i vector);
 void quark_json_print_int_values(__m256i vector);
 void quark_json_get_characters(__m256i vector, unsigned char offset, unsigned char length, char *characters);
-__m256i quark_json_parse_block(const char *string, const unsigned char offset);
+__m256i quark_json_parse_block(const char *string, const unsigned long offset);
 
 void quark_json_parse(char *string, struct QuarkJSONObject *parsed_json);
 
