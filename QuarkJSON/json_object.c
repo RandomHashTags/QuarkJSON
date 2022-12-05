@@ -98,7 +98,7 @@ void json_object_calculate_string_length(struct JSONObject *json) {
 }
 
 void json_object_to_string(struct JSONObject *json, char *to_string) {
-    printf("json_object_to_string\n");
+    printf("json_object_to_string json to_string_length=%lu, key=%s\n", json->to_string_length, json->has_key ? json->key : "NULL");
     to_string[0] = '{';
     
     unsigned long byte = 1;
@@ -156,8 +156,11 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         to_string[byte] = '"';
         byte += 1;
         const char *key = target_json.key;
-        printf("test1.1, key=%s\n", key);
         const unsigned char key_length = target_json.key_length;
+        const unsigned long json_length = target_json.to_string_length;
+        printf("test1.1, json_length=%lu\n", json_length);
+        printf("test1.2, key_length=%d\n", key_length);
+        printf("test1.3, key=%s\n", key);
         for (unsigned long j = 0; j < key_length; j++) {
             to_string[byte + j] = key[j];
         }
@@ -166,7 +169,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         to_string[byte-2] = '"';
         to_string[byte-1] = ':';
 
-        const unsigned long json_length = target_json.to_string_length;
+        
         printf("test3, json_length=%lu\n", json_length);
         char json_to_string[json_length];
         json_object_to_string(&target_json, json_to_string);
