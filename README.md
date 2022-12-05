@@ -23,7 +23,7 @@ compiler:
 - with -03 flag
 
 file:
-- test_json_big.json
+- test_json_api_weather_gov_fragment.json
 ### Parsing
 - speed: ~500-760 MB/s
 - RAM used: 13.74 MiB (14.40743 MB)
@@ -33,10 +33,12 @@ file:
 **OFFICIAL BENCHMARKS WILL BE MORE ACCURATE AND WELL DOCUMENTED WHEN THE PARSER IS OUT OF BETA**
 
 ### Future
-- use SIMD or similar cpu instruction for better performance
-- support Minify
-- support Prettify
-- support Validation
+- [ ] usable json parser
+- [ ] preserve order
+- [ ] use SIMD or similar cpu instruction for better performance
+- [ ] support Minify
+- [ ] support Prettify
+- [ ] support Validation
 
 ## Usage
 - TODO

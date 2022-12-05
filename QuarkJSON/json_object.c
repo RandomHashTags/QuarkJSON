@@ -91,6 +91,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
     
     unsigned long byte = 1;
 
+    printf("test1\n");
     struct JSONObjectValueBoolean *booleans = json->booleans;
     const unsigned long booleans_count = json->booleans_count;
     for (unsigned long i = 0; i < booleans_count; i++) {
@@ -105,6 +106,8 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += string_length + 1;
         to_string[byte-1] = ',';
     }
+
+    printf("test2\n");
     const unsigned long strings_count = json->strings_count;
     struct JSONObjectValueString *strings = json->strings;
     for (unsigned long i = 0; i < strings_count; i++) {
@@ -119,6 +122,8 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += string_length + 1;
         to_string[byte-1] = ',';
     }
+
+    printf("test3\n");
     const unsigned long numbers_count = json->numbers_count;
     struct JSONObjectValueNumber *numbers = json->numbers;
     for (unsigned long i = 0; i < numbers_count; i++) {
@@ -133,6 +138,8 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += number_length + 1;
         to_string[byte-1] = ',';
     }
+
+    printf("test4\n");
     const unsigned long jsons_count = json->jsons_count;
     struct JSONObject *jsons = json->jsons;
     for (unsigned long i = 0; i < jsons_count; i++) {
@@ -141,23 +148,31 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += 1;
         const char *key = target_json.key;
         const unsigned char key_length = target_json.key_length;
+        printf("test4.1, key=%s, key_length=%d\n", key, key_length);
         for (unsigned long j = 0; j < key_length; j++) {
             to_string[byte + j] = key[j];
         }
+        printf("test4.2\n");
         byte += key_length + 2;
         to_string[byte-2] = '"';
         to_string[byte-1] = ':';
 
+        printf("test4.3\n");
         const unsigned long json_length = target_json.to_string_length;
+        printf("test4.4, json_length=%lu\n", json_length);
         char json_to_string[json_length];
+        printf("test4.5\n");
         json_object_to_string(&target_json, json_to_string);
+        printf("test4.6\n");
         for (unsigned long j = 0; j < json_length; j++) {
             to_string[byte + j] = json_to_string[j];
         }
+        printf("test4.7\n");
         byte += json_length + 1;
         to_string[byte-1] = ',';
     }
 
+    printf("test5\n");
     const unsigned long arrays_count = json->arrays_count;
     struct JSONArray *arrays = json->arrays;
     for (unsigned long i = 0; i < arrays_count; i++) {
@@ -182,6 +197,7 @@ void json_object_to_string(struct JSONObject *json, char *to_string) {
         byte += array_length + 1;
         to_string[byte-1] = ',';
     }
+    printf("test6\n");
 
     to_string[byte-1] = '}';
     to_string[byte] = '\0';
@@ -560,6 +576,20 @@ void json_array_to_string(struct JSONArray *array, char *to_string) {
                 }
                 byte += value_string_length + 2;
                 to_string[byte-2] = '"';
+                to_string[byte-1] = ',';
+            }
+            break;
+        } case JSON_ARRAY_VALUE_TYPE_JSON_OBJECTS: {
+            struct JSONObject *jsons = array->jsons;
+            for (unsigned long i = 0; i < value_count; i++) {
+                struct JSONObject json = jsons[i];
+                const unsigned long to_string_length = json.to_string_length;
+                char json_to_string[to_string_length];
+                json_object_to_string(&json, json_to_string);
+                for (unsigned long j = 0; j < to_string_length; j++) {
+                    to_string[byte + j] = json_to_string[j];
+                }
+                byte += to_string_length + 1;
                 to_string[byte-1] = ',';
             }
             break;
