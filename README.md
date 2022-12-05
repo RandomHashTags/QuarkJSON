@@ -34,6 +34,9 @@ file:
 
 ### Future
 - use SIMD or similar cpu instruction for better performance
+- support Minify
+- support Prettify
+- support Validation
 
 ## Usage
 - TODO

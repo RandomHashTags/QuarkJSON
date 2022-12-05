@@ -44,7 +44,7 @@ struct JSONObjectValueString {
     char *key;
     unsigned char key_length;
     char *value;
-    unsigned char value_length;
+    unsigned short value_length;
     unsigned short to_string_length;
 };
 
@@ -83,7 +83,7 @@ struct JSONArray {
 };
 struct JSONArrayValueString {
     char *string;
-    unsigned char string_length;
+    unsigned short string_length;
 };
 struct JSONArrayValueNumber {
     char *number;
@@ -102,7 +102,7 @@ void json_object_calculate_string_length(struct JSONObject *json);
 void json_object_to_string(struct JSONObject *json, char *to_string);
 
 void json_object_value_create_boolean(char *key, unsigned char key_length, _Bool value, struct JSONObjectValueBoolean *boolean);
-void json_object_value_create_string(char *key, unsigned char key_length, char *value, unsigned char value_length, struct JSONObjectValueString *string);
+void json_object_value_create_string(char *key, unsigned char key_length, char *value, unsigned short value_length, struct JSONObjectValueString *string);
 void json_object_value_create_number(char *key, unsigned char key_length, char *value, unsigned char value_length, struct JSONObjectValueNumber *number);
 
 void json_object_value_boolean_to_string(struct JSONObjectValueBoolean *value_boolean, char *to_string);
